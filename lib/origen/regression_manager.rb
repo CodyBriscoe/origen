@@ -35,6 +35,7 @@ module Origen
     def run(options = {})
       options = {
         build_reference:      true,
+        build_method:         :init,
         send_email:           false,
         email_all_developers: false,
         report_results:       false,
@@ -58,7 +59,7 @@ module Origen
             disable_origen_version_check do
               Dir.chdir reference_origen_root do
                 Bundler.with_clean_env do
-                  system 'rm -rf lbin'
+                  system 'rm -rf lbin' if (Gem::Version.new(Origen.version) < Gem::Version.new('0.40.0'))  && !options[:service_account]
                   # If regression is run using a service account, we need to setup the path/bundler manually
                   # The regression manager needs to be passed a --service_account option when initiated.
                   if options[:service_account]
@@ -214,7 +215,7 @@ module Origen
           # Build the new reference workspace now.
           unless File.exist?(@reference_workspace)
             highlight { Origen.log.info 'Building reference workspace...' }
-            ws.build(@reference_workspace)
+            ws.build(@reference_workspace, options)
           end
           ws.set_reference_workspace(@reference_workspace)
         else
@@ -229,7 +230,7 @@ module Origen
         end
         unless File.exist?(@reference_workspace)
           highlight { Origen.log.info 'Building reference workspace...' }
-          ws.build(@reference_workspace)
+          ws.build(@reference_workspace, options)
         end
         ws.set_reference_workspace(@reference_workspace)
       end
