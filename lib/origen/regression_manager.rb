@@ -39,7 +39,7 @@ module Origen
         send_email:           false,
         email_all_developers: false,
         report_results:       false,
-        uses_lsf:             true
+        uses_lsf:             true,
       }.merge(options)
       options = load_options if running_in_reference_workspace?
       targets = prepare_targets(options)
@@ -47,7 +47,7 @@ module Origen
         Origen.lsf.clear_all
         yield options
         wait_for_completion(options) if options[:uses_lsf]
-        save_and_delete_output
+        save_and_delete_output(options)
       else
         if options[:build_reference]
           @reference_tag = version_to_tag(options[:version] || get_version(options))
@@ -145,12 +145,16 @@ module Origen
 
     # Saves all generated output (to the reference dir) and then
     # deletes the output directory to save space
-    def save_and_delete_output
-      Origen.lsf.build_log
+    def save_and_delete_output(options = {})
+      Origen.lsf.build_log(options)
       Origen.log.flush
       Dir.chdir reference_origen_root do
         Bundler.with_clean_env do
-          system 'bundle exec origen save all'
+          if options[:log_file]
+            system "bundle exec origen save all -f log/#{options[:log_file]}.txt"
+          else
+            system 'bundle exec origen save all'
+          end
         end
       end
       FileUtils.rm_rf "#{reference_origen_root}/output"

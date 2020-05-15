@@ -274,6 +274,7 @@ module Origen
       else
         msg = format_msg(method.to_s.upcase, msg)
       end
+      console.info msg if options[:verbose]
       @custom_logs[method.to_sym].info(msg)
     end
 
