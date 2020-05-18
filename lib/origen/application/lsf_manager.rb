@@ -253,11 +253,8 @@ module Origen
 
       # Build the log file from the completed jobs
       def build_log(options = {})
-        if options[:log_file]
-          Origen.log.send(options[:log_file], '*' * 70)
-        else
-          Origen.log.info '*' * 70
-        end
+        log_method = options[:log_file] ? options[:log_file] : :info
+        Origen.log.send(log_method, '*' * 70)
         completed_jobs.each do |job|
           File.open(log_file(job[:id])) do |f|
             last_line_blank = false
@@ -295,20 +292,12 @@ module Origen
                   stats.failed_files += Regexp.last_match[1].to_i
                 elsif line =~ /ERROR!/
                   stats.errors += 1
-                  if options[:log_file]
-                    Origen.log.send(options[:log_file], line)
-                  else
-                    Origen.log.send :relog, line
-                  end
+                  Origen.log.send :relog, line, options
                 else
                   # Compress multiple blank lines
                   if line =~ /^\s*$/ || line =~ /.*\|\|\s*$/
                     unless last_line_blank
-                      if options[:log_file]
-                        Origen.log.send(options[:log_file], nil)
-                      else
-                        Origen.log.info
-                      end
+                      Origen.log.send(log_method, nil)
                       last_line_blank = true
                     end
                   else
@@ -317,12 +306,7 @@ module Origen
                            line =~ /Insecure world writable dir/ ||
                            line =~ /To save all of/
                       line.strip!
-                      # line.sub!(/.*\|\| /, '')
-                      if options[:log_file]
-                        Origen.log.send(options[:log_file], line)
-                      else
-                        Origen.log.send :relog, line
-                      end
+                      Origen.log.send :relog, line, options
                       last_line_blank = false
                     end
                   end
@@ -335,11 +319,7 @@ module Origen
             end
           end
         end
-        if options[:log_file]
-          Origen.log.send(options[:log_file], '*' * 70)
-        else
-          Origen.log.info '*' * 70
-        end
+        Origen.log.send(log_method, '*' * 70)
         stats.print_summary
       end
 

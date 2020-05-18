@@ -126,7 +126,7 @@ module Origen
     end
 
     def summarize_results(options = {})
-      Origen.lsf.build_log
+      Origen.lsf.build_log(options)
       stats = Origen.app.stats
       if options[:report_results]
         puts "Regression results: \n"
