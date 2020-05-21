@@ -409,7 +409,7 @@ module Origen
         end
 
         str = "#{action} #{cmd}".strip
-        str.sub('origen ', '') if str =~ /^origen /
+        str.sub!('origen ', '') if str =~ /^origen /
 
         # Append the --exec_remote switch to all Origen commands, this allows command
         # processing to be altered based on whether it is running locally or
